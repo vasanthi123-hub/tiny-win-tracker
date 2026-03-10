@@ -1,0 +1,124 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f7fb;
+  color: #222;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  margin-bottom: 8px;
+  font-size: 2rem;
+}
+
+.hero p {
+  margin: 0;
+  color: #666;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.stats {
+  text-align: center;
+}
+
+.count {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 8px 0 0;
+}
+
+.win-form {
+  display: grid;
+  gap: 12px;
+}
+
+.win-form input,
+.win-form select,
+.win-form button {
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.win-form input,
+.win-form select {
+  border: 1px solid #ccc;
+}
+
+.win-form button {
+  border: none;
+  cursor: pointer;
+  background: #111827;
+  color: white;
+}
+
+.wins-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.win-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.win-item h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.win-item p {
+  margin: 0;
+  color: #666;
+  font-size: 0.92rem;
+}
+
+.delete-btn {
+  border: none;
+  background: #ef4444;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .win-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .delete-btn {
+    width: 100%;
+  }
+}
