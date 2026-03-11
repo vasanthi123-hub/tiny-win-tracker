@@ -9,11 +9,11 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["vite.svg"],
       manifest: {
-        name: "Momentum Tracker",
-        short_name: "Momentum",
-        description: "Track small daily wins and build momentum.",
-        theme_color: "#111827",
-        background_color: "#f4f6f8",
+        name: "Tiny Wins",
+        short_name: "Tiny Wins",
+        description: "Track your little wins and build confidence every day.",
+        theme_color: "#8b5cf6",
+        background_color: "#fff8fc",
         display: "standalone",
         start_url: "/",
         icons: [

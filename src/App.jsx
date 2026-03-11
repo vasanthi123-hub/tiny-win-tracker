@@ -14,25 +14,16 @@ function App() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Personal");
   const [wins, setWins] = useState(() => {
-    const saved = localStorage.getItem("momentumWins");
+    const saved = localStorage.getItem("tinyWins");
     return saved ? JSON.parse(saved) : [];
   });
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    localStorage.setItem("momentumWins", JSON.stringify(wins));
+    localStorage.setItem("tinyWins", JSON.stringify(wins));
   }, [wins]);
 
   const today = new Date();
-
-  function normalizeDate(dateString) {
-    const d = new Date(dateString);
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
-
-  function formatDayLabel(date) {
-    return date.toLocaleDateString("en-US", { weekday: "short" });
-  }
 
   function isSameDay(a, b) {
     return (
@@ -40,6 +31,11 @@ function App() {
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate()
     );
+  }
+
+  function normalizeDate(dateString) {
+    const d = new Date(dateString);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
   function handleSubmit(e) {
@@ -115,7 +111,7 @@ function App() {
     ).length;
 
     return {
-      day: formatDayLabel(d),
+      day: d.toLocaleDateString("en-US", { weekday: "short" }),
       wins: count,
     };
   });
@@ -142,8 +138,9 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="hero">
-          <h1>Momentum Tracker</h1>
-          <p>Celebrate small daily progress, one win at a time.</p>
+          <div className="hero-badge">✨ Tiny Wins</div>
+          <h1>Tiny Wins</h1>
+          <p>Track your little wins and build confidence every day.</p>
         </header>
 
         <section className="stats-grid">
@@ -164,16 +161,16 @@ function App() {
 
           <div className="card stat-card">
             <span>Longest Streak</span>
-            <strong>{longestStreak}</strong>
+            <strong>{longestStreak} 🌟</strong>
           </div>
         </section>
 
-        <section className="card">
-          <h2>Add a Win</h2>
+        <section className="card soft-card">
+          <h2>What went well today?</h2>
           <form onSubmit={handleSubmit} className="win-form">
             <input
               type="text"
-              placeholder="What is your tiny win today?"
+              placeholder="Example: Finished my workout"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -192,27 +189,27 @@ function App() {
           </form>
         </section>
 
-        <section className="card chart-card">
+        <section className="card soft-card chart-card">
           <div className="section-header">
-            <h2>Weekly Progress</h2>
+            <h2>Your weekly glow-up</h2>
           </div>
 
           <div className="chart-wrap">
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="day" />
                 <YAxis allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="wins" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="wins" fill="#c084fc" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
 
-        <section className="card">
+        <section className="card soft-card">
           <div className="section-header">
-            <h2>Recent Wins</h2>
+            <h2>Your recent wins</h2>
 
             <select
               className="filter-select"
@@ -227,7 +224,7 @@ function App() {
 
           {filteredWins.length === 0 ? (
             <div className="empty-state">
-              <p>No wins yet — add your first one.</p>
+              <p>No wins yet — add your first one 💖</p>
             </div>
           ) : (
             <ul className="wins-list">
