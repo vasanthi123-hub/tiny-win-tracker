@@ -1,114 +1,77 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Personal");
-  const [wins, setWins] = useState(() => {
-    const savedWins = localStorage.getItem("tinyWins");
-    if (savedWins) {
-      return JSON.parse(savedWins);
-    }
-
-    return [
-      { id: 1, title: "Went for a walk", category: "Health", date: "2026-03-09" },
-      { id: 2, title: "Studied AWS for 30 minutes", category: "Learning", date: "2026-03-09" },
-      { id: 3, title: "Cooked dinner at home", category: "Personal", date: "2026-03-08" },
-    ];
-  });
+  const [win, setWin] = useState("");
+  const [wins, setWins] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("tinyWins", JSON.stringify(wins));
+    const savedWins = JSON.parse(localStorage.getItem("wins")) || [];
+    setWins(savedWins);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("wins", JSON.stringify(wins));
   }, [wins]);
 
-  const totalWins = useMemo(() => wins.length, [wins]);
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    if (!title.trim()) return;
+  const addWin = () => {
+    if (win.trim() === "") return;
 
     const newWin = {
-      id: Date.now(),
-      title: title.trim(),
-      category,
-      date: new Date().toISOString().split("T")[0],
+      text: win,
+      date: new Date().toISOString()
     };
 
     setWins([newWin, ...wins]);
-    setTitle("");
-    setCategory("Personal");
-  }
+    setWin("");
+  };
 
-  function handleDelete(id) {
-    setWins(wins.filter((win) => win.id !== id));
-  }
+  const deleteWin = (index) => {
+    const updatedWins = wins.filter((_, i) => i !== index);
+    setWins(updatedWins);
+  };
+
+  const today = new Date().toDateString();
+
+  const winsToday = wins.filter(
+    (w) => new Date(w.date).toDateString() === today
+  );
 
   return (
-    <div className="app">
-      <div className="container">
-        <header className="hero">
-          <h1>Tiny Wins Tracker</h1>
-          <p>Track the small things that move your life forward.</p>
-        </header>
+    <div className="container">
+      <h1>Momentum Tracker</h1>
+      <p className="subtitle">Celebrate small daily progress</p>
 
-        <section className="card stats">
-          <h2>Total Wins</h2>
-          <p className="count">{totalWins}</p>
-        </section>
+      <div className="stats">
+        <div className="card">
+          <h3>Total Wins</h3>
+          <p>{wins.length}</p>
+        </div>
 
-        <section className="card">
-          <h2>Add a Tiny Win</h2>
-          <form onSubmit={handleSubmit} className="win-form">
-            <input
-              type="text"
-              placeholder="Example: Finished my workout"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option>Personal</option>
-              <option>Health</option>
-              <option>Learning</option>
-              <option>Career</option>
-              <option>Other</option>
-            </select>
-
-            <button type="submit">Add Win</button>
-          </form>
-        </section>
-
-        <section className="card">
-          <h2>Recent Wins</h2>
-
-          {wins.length === 0 ? (
-            <p>No wins yet. Add your first one.</p>
-          ) : (
-            <ul className="wins-list">
-              {wins.map((win) => (
-                <li key={win.id} className="win-item">
-                  <div>
-                    <h3>{win.title}</h3>
-                    <p>
-                      {win.category} · {win.date}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(win.id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <div className="card">
+          <h3>Wins Today</h3>
+          <p>{winsToday.length}</p>
+        </div>
       </div>
+
+      <div className="inputSection">
+        <input
+          type="text"
+          placeholder="What is your tiny win today?"
+          value={win}
+          onChange={(e) => setWin(e.target.value)}
+        />
+        <button onClick={addWin}>Add Win</button>
+      </div>
+
+      <ul className="winsList">
+        {wins.map((w, index) => (
+          <li key={index}>
+            {w.text}
+            <button onClick={() => deleteWin(index)}>❌</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
