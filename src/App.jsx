@@ -1,14 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
 
 function App() {
   const [title, setTitle] = useState("");
@@ -18,12 +9,11 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [filter, setFilter] = useState("All");
+  const [celebration, setCelebration] = useState("");
 
   useEffect(() => {
     localStorage.setItem("tinyWins", JSON.stringify(wins));
   }, [wins]);
-
-  const today = new Date();
 
   function isSameDay(a, b) {
     return (
@@ -38,7 +28,9 @@ function App() {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
-  function handleSubmit(e) {
+  const today = new Date();
+
+  function addWin(e) {
     e.preventDefault();
     if (!title.trim()) return;
 
@@ -52,13 +44,23 @@ function App() {
     setWins([newWin, ...wins]);
     setTitle("");
     setCategory("Personal");
+    setCelebration("✨ +10 XP! Nice job!");
+
+    setTimeout(() => {
+      setCelebration("");
+    }, 2000);
   }
 
-  function handleDelete(id) {
+  function deleteWin(id) {
     setWins(wins.filter((win) => win.id !== id));
   }
 
   const totalWins = wins.length;
+  const xp = totalWins * 10;
+  const level = Math.floor(xp / 50) + 1;
+  const xpIntoLevel = xp % 50;
+  const xpNeeded = 50;
+  const progressPercent = (xpIntoLevel / xpNeeded) * 100;
 
   const winsToday = wins.filter((win) =>
     isSameDay(new Date(win.createdAt), today)
@@ -82,39 +84,16 @@ function App() {
     }
   }
 
-  let longestStreak = 0;
-  let runningStreak = 0;
+  const dailyQuestGoal = 3;
+  const dailyQuestProgress = Math.min(winsToday, dailyQuestGoal);
+  const dailyQuestDone = winsToday >= dailyQuestGoal;
 
-  for (let i = 0; i < uniqueWinDays.length; i++) {
-    if (i === 0) {
-      runningStreak = 1;
-    } else {
-      const prev = uniqueWinDays[i - 1];
-      const curr = uniqueWinDays[i];
-      const diffDays = Math.round((prev - curr) / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) {
-        runningStreak += 1;
-      } else {
-        runningStreak = 1;
-      }
-    }
-    longestStreak = Math.max(longestStreak, runningStreak);
-  }
-
-  const weeklyData = [...Array(7)].map((_, index) => {
-    const d = new Date();
-    d.setDate(today.getDate() - (6 - index));
-
-    const count = wins.filter((win) =>
-      isSameDay(new Date(win.createdAt), d)
-    ).length;
-
-    return {
-      day: d.toLocaleDateString("en-US", { weekday: "short" }),
-      wins: count,
-    };
-  });
+  const achievements = [
+    { label: "First Win", earned: totalWins >= 1, emoji: "🌱" },
+    { label: "5 Wins", earned: totalWins >= 5, emoji: "✨" },
+    { label: "10 Wins", earned: totalWins >= 10, emoji: "🏆" },
+    { label: "3 Day Streak", earned: currentStreak >= 3, emoji: "🔥" },
+  ];
 
   const filteredWins = useMemo(() => {
     if (filter === "All") return wins;
@@ -134,82 +113,125 @@ function App() {
     return wins;
   }, [filter, wins]);
 
+  function getCategoryEmoji(cat) {
+    if (cat === "Health") return "🌿";
+    if (cat === "Learning") return "📚";
+    if (cat === "Career") return "💼";
+    return "💖";
+  }
+
   return (
-    <div className="app">
+    <div className="app-shell">
       <div className="container">
-        <header className="hero">
-          <div className="hero-badge">✨ Tiny Wins</div>
-          <h1>Tiny Wins</h1>
-          <p>Track your little wins and build confidence every day.</p>
+        <header className="hero-card">
+          <div className="hero-chip">🎀 Tiny Wins</div>
+          <h1>Level up your day</h1>
+          <p>Turn tiny wins into momentum, points, and feel-good progress.</p>
+
+          <div className="level-card">
+            <div className="level-top">
+              <span>Level {level}</span>
+              <span>{xpIntoLevel} / {xpNeeded} XP</span>
+            </div>
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="hero-stats">
+            <div className="hero-stat pink">
+              <span>Total Wins</span>
+              <strong>{totalWins}</strong>
+            </div>
+            <div className="hero-stat purple">
+              <span>Wins Today</span>
+              <strong>{winsToday}</strong>
+            </div>
+            <div className="hero-stat peach">
+              <span>Streak</span>
+              <strong>{currentStreak} 🔥</strong>
+            </div>
+          </div>
         </header>
 
-        <section className="stats-grid">
-          <div className="card stat-card">
-            <span>Total Wins</span>
-            <strong>{totalWins}</strong>
-          </div>
+        {celebration && <div className="celebration-banner">{celebration}</div>}
 
-          <div className="card stat-card">
-            <span>Wins Today</span>
-            <strong>{winsToday}</strong>
+        <section className="card quest-card">
+          <div>
+            <h2>🎯 Daily Quest</h2>
+            <p>Add 3 wins today to complete your quest.</p>
           </div>
-
-          <div className="card stat-card">
-            <span>Current Streak</span>
-            <strong>{currentStreak} 🔥</strong>
-          </div>
-
-          <div className="card stat-card">
-            <span>Longest Streak</span>
-            <strong>{longestStreak} 🌟</strong>
+          <div className="quest-status">
+            <strong>{dailyQuestProgress} / {dailyQuestGoal}</strong>
+            <span>{dailyQuestDone ? "Completed ✨" : "In progress"}</span>
           </div>
         </section>
 
-        <section className="card soft-card">
-          <h2>What went well today?</h2>
-          <form onSubmit={handleSubmit} className="win-form">
-            <input
-              type="text"
-              placeholder="Example: Finished my workout"
+        <section className="card add-card">
+          <div className="section-row">
+            <div>
+              <h2>Add a win</h2>
+              <p>What went well today?</p>
+            </div>
+          </div>
+
+          <form onSubmit={addWin} className="win-form">
+            <textarea
+              placeholder="Example: finished workout, studied AWS, helped a friend..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              rows="3"
             />
 
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option>Personal</option>
-              <option>Health</option>
-              <option>Learning</option>
-              <option>Career</option>
-            </select>
+            <div className="form-bottom">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option>Personal</option>
+                <option>Health</option>
+                <option>Learning</option>
+                <option>Career</option>
+              </select>
 
-            <button type="submit">Add Win</button>
+              <button type="submit">Add Win ✨</button>
+            </div>
           </form>
         </section>
 
-        <section className="card soft-card chart-card">
-          <div className="section-header">
-            <h2>Your weekly glow-up</h2>
+        <section className="card achievements-card">
+          <div className="section-row">
+            <div>
+              <h2>Achievements</h2>
+              <p>Unlock little rewards as you keep going.</p>
+            </div>
           </div>
 
-          <div className="chart-wrap">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="wins" fill="#c084fc" radius={[10, 10, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="badges-grid">
+            {achievements.map((badge) => (
+              <div
+                key={badge.label}
+                className={`badge-card ${badge.earned ? "earned" : "locked"}`}
+              >
+                <div className="badge-emoji">{badge.emoji}</div>
+                <div className="badge-title">{badge.label}</div>
+                <div className="badge-status">
+                  {badge.earned ? "Unlocked" : "Locked"}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section className="card soft-card">
-          <div className="section-header">
-            <h2>Your recent wins</h2>
+        <section className="card wins-card">
+          <div className="section-row">
+            <div>
+              <h2>Your wins</h2>
+              <p>Your little progress log.</p>
+            </div>
 
             <select
               className="filter-select"
@@ -224,33 +246,41 @@ function App() {
 
           {filteredWins.length === 0 ? (
             <div className="empty-state">
-              <p>No wins yet — add your first one 💖</p>
+              <div className="empty-icon">🌷</div>
+              <h3>No wins yet</h3>
+              <p>Add your first little win and start building momentum.</p>
             </div>
           ) : (
-            <ul className="wins-list">
+            <div className="wins-list">
               {filteredWins.map((win) => (
-                <li key={win.id} className="win-item">
-                  <div className="win-main">
-                    <h3>{win.title}</h3>
-                    <div className="win-meta">
-                      <span className={`badge ${win.category.toLowerCase()}`}>
-                        {win.category}
-                      </span>
-                      <span className="win-date">
-                        {new Date(win.createdAt).toLocaleDateString()}
-                      </span>
+                <div key={win.id} className="win-tile">
+                  <div className="win-left">
+                    <div className={`emoji-circle ${win.category.toLowerCase()}`}>
+                      {getCategoryEmoji(win.category)}
+                    </div>
+
+                    <div className="win-content">
+                      <h3>{win.title}</h3>
+                      <div className="meta-row">
+                        <span className={`tag ${win.category.toLowerCase()}`}>
+                          {win.category}
+                        </span>
+                        <span className="date-text">
+                          {new Date(win.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <button
                     className="delete-btn"
-                    onClick={() => handleDelete(win.id)}
+                    onClick={() => deleteWin(win.id)}
                   >
-                    Delete
+                    ✕
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
       </div>
